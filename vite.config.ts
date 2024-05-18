@@ -13,9 +13,9 @@ const manifestForPlugIn: Partial<VitePWAOptions> = {
     "maskable-icon-512x512.png",
   ],
   manifest: {
-    name: "lua-web-editor",
-    short_name: "lua-web-editor",
-    description: "Lua Web Editor",
+    name: "Python Web Editor",
+    short_name: "Python Web Editor",
+    description: "Python Web Editor - Powered by Vite and React",
     icons: [
       {
         src: "pwa-64x64.png",
@@ -53,7 +53,7 @@ export default defineConfig({
     react(),
     VitePWA(manifestForPlugIn),
   ],
-  base: "/lua-web-editor/",
+  base: "/py-web-editor/",
   optimizeDeps: {
     include: ["@monaco-editor/react", "wasmoon"],
   },
