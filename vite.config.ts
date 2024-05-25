@@ -49,12 +49,17 @@ const manifestForPlugIn: Partial<VitePWAOptions> = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA(manifestForPlugIn),
-  ],
+  plugins: [react(), VitePWA(manifestForPlugIn)],
   base: "/py-web-editor/",
   optimizeDeps: {
-    include: ["@monaco-editor/react", "wasmoon"],
+    include: ["@monaco-editor/react"],
+    exclude: ["pyodide"],
+  },
+
+  resolve: {
+    alias: {
+      "node-fetch": "isomorphic-fetch",
+      // pyodide: "https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js",
+    },
   },
 });
