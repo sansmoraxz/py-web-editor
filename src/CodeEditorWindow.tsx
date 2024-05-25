@@ -48,11 +48,9 @@ print(flush=True)
       try {
         const indentedCode = srCode.split("\n").map((line) => "    " + line).join("\n");
         const code = codeTemplate.replace("{code}", indentedCode || "   pass") + "\n";
-        console.log("Running code:", code);
         const output = await engine.runPythonAsync(code);
         if (output) {
           console.log("Script Output:", output);
-          setOutput(output);
         }
       } catch (err) {
         console.error("Script Error:", err);
@@ -62,7 +60,6 @@ print(flush=True)
       console.error("Engine Error:", err);
     } finally {
       // flush output
-      await engine.runPythonAsync("print(flush=True)");
       console.timeEnd("Execution Time");
     }
   }
