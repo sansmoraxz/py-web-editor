@@ -1,33 +1,38 @@
 import Editor from "@monaco-editor/react";
 import { useState } from "react";
-import { LogsContainer } from "./LogsContainer";
-import { LuaFactory } from "wasmoon";
-
-const factory = new LuaFactory();
-
-const defaultCode = `-- What's this? A Lua editor?
--- Yes! You can write Lua scripts and run them here.
--- There is no server-side code running here.
--- Everything is in the browser (yes even the compiler).
--- Powered by wasmoon (webassembly).
--- Enjoy!
---
--- Return values are printed to the output window.
--- Logs are printed to the logs window.
+import { loadPyodide } from "pyodide";
 
 
--- For details about the compilation process for lua, check https://www.lua.org/pil/8.html
+const defaultCode = `
+# Python code here
+print("Hello, World!")
 `;
 
-type CodeEditorWindowProps = {
-  language?: string;
-};
+const engine = await loadPyodide();
 
-const CodeEditorWindow = ({ language }: CodeEditorWindowProps) => {
-  const [srCode, setSrCode] = useState<string>("");
-  const [output, setOutput] = useState<string>("Press run to execute the script.");
+
+
+const CodeEditorWindow = () => {
+  const codeTemplate = `
+__name__ = "__main__"
+def __main8978():
+{code}
+
+__main8978()
+# clear buffer
+print(flush=True)
+`;
+  const [srCode, setSrCode] = useState<string>(defaultCode);
+  const [output, setOutput] = useState([<>Press run to execute the script.</>]);
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
+
+  engine.setStdout({ batched: (msg) => {
+    console.log(msg);
+    setOutput(
+      prev => [...prev, <div key={prev.length}>{msg}</div>]
+    );
+  }, isatty: false });
 
   function handleEditorChange(value: string | undefined) {
     setSrCode(value || "");
@@ -35,36 +40,30 @@ const CodeEditorWindow = ({ language }: CodeEditorWindowProps) => {
   }
 
   async function process() {
-    console.clear();
     console.warn("Running script...");
     console.time("Execution Time");
+    setOutput([<></>]);
 
     try {
-      const engine = await factory.createEngine();
-
-      // override print function to use console.log
-      engine.global.set("print", (...args: unknown[]) => {
-        console.info("Lua Console output: ", ...args);
-      });
-
-
       try {
-        const output = await engine.doString(srCode);
+        const indentedCode = srCode.split("\n").map((line) => "    " + line).join("\n");
+        const code = codeTemplate.replace("{code}", indentedCode || "   pass") + "\n";
+        console.log("Running code:", code);
+        const output = await engine.runPythonAsync(code);
         if (output) {
           console.log("Script Output:", output);
           setOutput(output);
-        } else {
-          console.log("Script Output: No output");
-          setOutput("No output");
         }
-        console.timeEnd("Execution Time");
       } catch (err) {
         console.error("Script Error:", err);
-        setOutput(`Error occured. Check the logs.`);
-        console.timeEnd("Execution Time");
+        setOutput([<code>{String(err)}</code>]);
       }
     } catch (err) {
       console.error("Engine Error:", err);
+    } finally {
+      // flush output
+      await engine.runPythonAsync("print(flush=True)");
+      console.timeEnd("Execution Time");
     }
   }
 
@@ -81,7 +80,7 @@ const CodeEditorWindow = ({ language }: CodeEditorWindowProps) => {
         <Editor
           height="80vh"
           width="50vw"
-          language={language || "lua"}
+          language="python"
           theme="vs-dark"
           value={srCode}
           onChange={handleEditorChange}
@@ -104,17 +103,11 @@ const CodeEditorWindow = ({ language }: CodeEditorWindowProps) => {
             Output
           </div>
           <code className="text-sm text-gray-300 md:font-light">
-            {isRunning ? "Running..." : JSON.stringify(output)}
+            {isRunning ? "Running..." : <code>{output}</code>}
           </code>
         </div>
         <br />
 
-        <div className="h-96 w-full overflow-y-auto border-2 border-sky-800 rounded-t-lg">
-          <div className="text-lg text-gray-400 pb-4 md:font-semibold">
-            Logs
-          </div>
-          <LogsContainer />
-        </div>
       </div>
     </div>
   );
