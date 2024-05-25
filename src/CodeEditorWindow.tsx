@@ -1,18 +1,15 @@
 import Editor from "@monaco-editor/react";
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { loadPyodide } from "pyodide";
-
+import type { PyodideInterface } from "pyodide";
 
 const defaultCode = `
 # Python code here
 print("Hello, World!")
 `;
 
-const engine = await loadPyodide();
-
-
-
 const CodeEditorWindow = () => {
+  const engine = useRef<null | PyodideInterface>(null);
   const codeTemplate = `
 __name__ = "__main__"
 def __main8978():
@@ -27,12 +24,24 @@ print(flush=True)
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  engine.setStdout({ batched: (msg) => {
-    console.log(msg);
-    setOutput(
-      prev => [...prev, <div key={prev.length}>{msg}</div>]
-    );
-  }, isatty: false });
+  useEffect(() => {
+    async function loadEngine() {
+      if (!engine.current) {
+        engine.current = await loadPyodide();
+        
+        engine.current.setStdout({
+          batched: (msg) => {
+            console.log(msg);
+            setOutput((prev) => [...prev, <div key={prev.length}>{msg}</div>]);
+          },
+          isatty: false,
+        });
+      }
+    }
+    loadEngine();
+  }, []);
+
+  
 
   function handleEditorChange(value: string | undefined) {
     setSrCode(value || "");
@@ -48,7 +57,7 @@ print(flush=True)
       try {
         const indentedCode = srCode.split("\n").map((line) => "    " + line).join("\n");
         const code = codeTemplate.replace("{code}", indentedCode || "   pass") + "\n";
-        const output = await engine.runPythonAsync(code);
+        const output = await engine?.current?.runPythonAsync(code);
         if (output) {
           console.log("Script Output:", output);
         }
