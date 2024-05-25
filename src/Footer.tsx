@@ -2,7 +2,13 @@ import { useState } from "react";
 
 const texts = [
   "Free to use, no sign up required.",
-  <a href="https://github.com/sansmoraxz/lua-web-editor" target="_blank" rel="noreferrer">View Source</a>,
+  <a
+    href="https://github.com/sansmoraxz/py-web-editor"
+    target="_blank"
+    rel="noreferrer"
+  >
+    View Source
+  </a>,
 ];
 
 export default function Footer() {
