@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA, VitePWAOptions } from "vite-plugin-pwa";
+import { viteStaticCopy } from "vite-plugin-static-copy";
+
 
 const manifestForPlugIn: Partial<VitePWAOptions> = {
   registerType: "autoUpdate",
@@ -49,7 +51,18 @@ const manifestForPlugIn: Partial<VitePWAOptions> = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), VitePWA(manifestForPlugIn)],
+  plugins: [
+    react(),
+    VitePWA(manifestForPlugIn),
+    viteStaticCopy({
+      targets: [
+        {
+          src: "node_modules/pyodide/*.*",
+          dest: "./assets",
+        },
+      ],
+    }),
+  ],
   base: "/py-web-editor/",
   optimizeDeps: {
     include: ["@monaco-editor/react"],
