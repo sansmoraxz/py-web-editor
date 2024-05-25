@@ -20,7 +20,7 @@ __main8978()
 print(flush=True)
 `;
   const [srCode, setSrCode] = useState<string>(defaultCode);
-  const [output, setOutput] = useState([<>Press run to execute the script.</>]);
+  const [output, setOutput] = useState([<div key="_0">Press run to execute the script.</div>]);
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
@@ -51,7 +51,7 @@ print(flush=True)
   async function process() {
     console.warn("Running script...");
     console.time("Execution Time");
-    setOutput([<></>]);
+    setOutput([<div key="_c0"></div>]);
 
     try {
       try {
@@ -63,7 +63,7 @@ print(flush=True)
         }
       } catch (err) {
         console.error("Script Error:", err);
-        setOutput([<code>{String(err)}</code>]);
+        setOutput([<code key="_e0">{String(err)}</code>]);
       }
     } catch (err) {
       console.error("Engine Error:", err);
