@@ -55,8 +55,8 @@ print(flush=True)
 
     try {
       try {
-        const indentedCode = srCode.split("\n").map((line) => "    " + line).join("\n");
-        const code = codeTemplate.replace("{code}", indentedCode || "   pass") + "\n";
+        const indentedCode = (srCode+"\npass").split("\n").map((line) => "    " + line).join("\n");
+        const code = codeTemplate.replace("{code}", indentedCode) + "\n";
         const output = await engine?.current?.runPythonAsync(code);
         if (output) {
           console.log("Script Output:", output);
